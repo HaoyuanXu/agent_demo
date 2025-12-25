@@ -266,9 +266,3 @@ def parse_trace(payload: TraceRequest) -> JSONResponse:
             "mermaid": _build_mermaid(steps),
         }
     )
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("app:app", host="0.0.0.0", port=8000)
