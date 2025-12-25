@@ -7,13 +7,14 @@ import copy
 import datetime
 import dateutil.relativedelta
 import asyncio
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from contextlib import redirect_stdout
 import numpy as np
 import sympy
 import math
 from sympy import symbols, Eq, solve
 from scipy import optimize
+import re
 
 
 class UnsafeCodeError(Exception):
@@ -64,6 +65,30 @@ x, y, z = sympy.symbols('x y z')
         exec(imports, self._global_vars)
         # Then execute user code
         exec(code_piece, self._global_vars)
+
+
+def _strip_markdown_fences(code: str) -> str:
+    code = code.strip()
+    if code.startswith("```"):
+        code = re.sub(r"^```(?:python|py)?\s*", "", code, flags=re.IGNORECASE)
+        code = re.sub(r"\s*```$", "", code)
+    lines = code.splitlines()
+    if lines and lines[0].strip().lower() in {"python", "py", "python3"}:
+        code = "\n".join(lines[1:])
+    return code.strip()
+
+
+def _strip_safe_imports(code: str, modules: Optional[List[str]] = None) -> str:
+    if modules is None:
+        modules = ["numpy", "np", "sympy", "math", "scipy"]
+    cleaned_lines = []
+    for line in code.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("import ") or stripped.startswith("from "):
+            if any(re.search(rf"\b{module}\b", stripped) for module in modules):
+                continue
+        cleaned_lines.append(line)
+    return "\n".join(cleaned_lines).strip()
         
     def eval_code(self, expr: str) -> Any:
         return eval(expr, self._global_vars)
@@ -251,16 +276,17 @@ async def execute_python_code(code: str) -> str:
         execution result
     """
     try:
-        # Create executor instance
         executor = PythonExecutor(get_answer_from_stdout=True)
-        
-        # Execute code and get result
-        result, report = await executor.apply(code)
+        cleaned_code = _strip_markdown_fences(code)
+        result, report = await executor.apply(cleaned_code)
+
+        if isinstance(report, str) and ("No module named" in report or "import not found" in report):
+            retry_code = _strip_safe_imports(cleaned_code)
+            if retry_code and retry_code != cleaned_code:
+                result, report = await executor.apply(retry_code)
 
         returned_result = "Execution result: " + result + "\nExecution status: " + report
-        
         return returned_result
-        
     except Exception as e:
         return f"Execution error: {str(e)}"
     
@@ -277,7 +303,12 @@ def execute_python_code_sync(code: str) -> str:
     """
     try:
         executor = PythonExecutor(get_answer_from_stdout=True)
-        result, report = executor.apply_sync(code)
+        cleaned_code = _strip_markdown_fences(code)
+        result, report = executor.apply_sync(cleaned_code)
+        if isinstance(report, str) and ("No module named" in report or "import not found" in report):
+            retry_code = _strip_safe_imports(cleaned_code)
+            if retry_code and retry_code != cleaned_code:
+                result, report = executor.apply_sync(retry_code)
         returned_result = "Execution result: " + result + "\nExecution status: " + report
         return returned_result
     except Exception as e:
