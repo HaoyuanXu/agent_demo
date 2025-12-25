@@ -54,7 +54,7 @@ Now I have ..., I can now proceed to ...
 
 ... (More reasoning and tool calls)
 
-Finally, with the above ... information, I can now answer the question. \\boxed{{...YOUR ANSWER...}}
+Finally, with the above ... information, I can now answer the question. Final answer: ... (use plain text with numeric values, no LaTeX).
 
 If you get stuck or your reasoning becomes too lengthy, you can fold your thoughts:
 
@@ -70,7 +70,7 @@ Remember:
 - Use {FOLD_THOUGHT} to fold your thoughts and start a new round of reasoning.
 - Always strictly follow the specified formats for tool search, tool call, and thought folding.
 - Ensure tool names and parameters are provided accurately in each tool call.
-- Once you have gathered enough information to answer the question, present your final answer in the format \\boxed{{YOUR_ANSWER}} and stop reasoning.
+- Once you have gathered enough information to answer the question, present your final answer in plain text with explicit numeric values (no LaTeX or \\boxed) and stop reasoning.
 
 Now, begin your reasoning for the following question:
 {question}
@@ -107,7 +107,7 @@ Now I have ..., I can now proceed to ...
 
 ... (More reasoning and tool calls)
 
-Finally, with the above ... information, I can now answer the question. \\boxed{{...YOUR ANSWER...}}
+Finally, with the above ... information, I can now answer the question. Final answer: ... (use plain text with numeric values, no LaTeX).
 
 If you get stuck or your reasoning becomes too lengthy, you can fold your thoughts:
 
@@ -122,7 +122,7 @@ Remember:
 - Use {FOLD_THOUGHT} to fold your thoughts and start a new round of reasoning.
 - Always strictly follow the specified formats for tool call and thought folding.
 - Ensure tool names and parameters are provided accurately in each tool call.
-- Once you have gathered enough information to answer the question, present your final answer in the format \\boxed{{YOUR_ANSWER}} and stop reasoning.
+- Once you have gathered enough information to answer the question, present your final answer in plain text with explicit numeric values (no LaTeX or \\boxed) and stop reasoning.
 
 Question:
 {question}
